@@ -4,7 +4,8 @@ import confetti from 'canvas-confetti';
 import { exportExamResultToMarkdown } from '../utils/markdownParser';
 import type { Exam, Question } from '../utils/markdownParser';
 import { MarkdownRenderer } from './MarkdownRenderer';
-
+import { translations } from '../utils/translations';
+import type { LangType } from '../utils/translations';
 
 interface ResultScreenProps {
   exam: Exam;
@@ -12,6 +13,7 @@ interface ResultScreenProps {
   answers: Record<string, string>;
   timeSpent: number;
   onRestart: () => void;
+  lang: LangType;
 }
 
 export const ResultScreen: React.FC<ResultScreenProps> = ({
@@ -20,8 +22,11 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({
   answers,
   timeSpent,
   onRestart,
+  lang,
 }) => {
   const [expandedQuestionId, setExpandedQuestionId] = useState<string | null>(null);
+
+  const t = translations[lang];
 
   // 1. Calculate Scores
   let correctCount = 0;
@@ -103,9 +108,10 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({
     const link = document.createElement('a');
     link.href = url;
     
-    // Format filename: hasil-ujian-judul.md
+    // Format filename: exam-result-title.md
+    const prefix = lang === 'id' ? 'hasil-ujian' : 'exam-result';
     const sanitizedTitle = exam.metadata.title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-    link.setAttribute('download', `hasil-ujian-${sanitizedTitle}.md`);
+    link.setAttribute('download', `${prefix}-${sanitizedTitle}.md`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -114,7 +120,7 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({
   const formatDuration = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
-    return `${mins} Menit ${secs} Detik`;
+    return lang === 'id' ? `${mins} Menit ${secs} Detik` : `${mins}m ${secs}s`;
   };
 
   const toggleExpandQuestion = (id: string) => {
@@ -129,12 +135,12 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({
         <div className="max-w-4xl w-full mx-auto flex items-center justify-between">
           <button
             onClick={onRestart}
-            className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors"
+            className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors cursor-pointer"
           >
             <ArrowLeft size={16} />
-            Mulai Ujian Baru
+            {t.resultRestartBtn}
           </button>
-          <span className="font-extrabold text-sm text-violet-600 dark:text-violet-400">Ringkasan Hasil</span>
+          <span className="font-extrabold text-sm text-violet-600 dark:text-violet-400">{t.resultSummaryTitle}</span>
         </div>
       </header>
 
@@ -150,7 +156,7 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({
             <Award size={36} />
           </div>
 
-          <h2 className="text-xl font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider text-xs">Skor Ujian Anda</h2>
+          <h2 className="text-xl font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider text-xs">{t.resultScoreLabel}</h2>
           
           <div className="my-6">
             <span className="text-6xl md:text-7xl font-extrabold tracking-tight bg-gradient-to-r from-violet-600 to-indigo-600 dark:from-violet-400 dark:to-indigo-400 bg-clip-text text-transparent">
@@ -164,10 +170,10 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({
 
           <p className="text-sm text-gray-500 dark:text-gray-450 max-w-md mx-auto mb-6">
             {scorePercent >= 80
-              ? 'Luar biasa! Anda menguasai materi ini dengan sangat baik.'
+              ? t.resultScoreDescHigh
               : scorePercent >= 60
-              ? 'Kerja bagus! Anda lulus ujian ini, terus tingkatkan belajar Anda.'
-              : 'Jangan berkecil hati. Pelajari kembali materi dan coba lagi nanti.'}
+              ? t.resultScoreDescMid
+              : t.resultScoreDescLow}
           </p>
 
           {/* Action Buttons */}
@@ -177,13 +183,13 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({
               className="px-6 py-3 bg-violet-600 hover:bg-violet-700 dark:bg-violet-500 dark:hover:bg-violet-600 text-white font-bold rounded-xl shadow-md shadow-violet-500/10 hover:shadow-violet-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer"
             >
               <Download size={18} />
-              Download Hasil (.md)
+              {t.resultDownloadReport}
             </button>
             <button
               onClick={onRestart}
               className="px-6 py-3 border border-gray-200 dark:border-gray-800 bg-white dark:bg-slate-900 hover:bg-gray-50 dark:hover:bg-slate-800 text-gray-700 dark:text-gray-300 font-bold rounded-xl transition-all cursor-pointer"
             >
-              Ujian Baru
+              {t.resultNewExam}
             </button>
           </div>
         </div>
@@ -193,31 +199,31 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({
           <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-gray-200 dark:border-gray-800 flex flex-col justify-center shadow-sm">
             <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 mb-1">
               <CheckCircle2 size={16} />
-              <span className="text-xs font-bold uppercase tracking-wider">Benar</span>
+              <span className="text-xs font-bold uppercase tracking-wider">{t.resultStatCorrect}</span>
             </div>
-            <span className="text-2xl font-extrabold text-gray-900 dark:text-white">{correctCount} <span className="text-xs font-medium text-gray-400 dark:text-gray-500">soal</span></span>
+            <span className="text-2xl font-extrabold text-gray-900 dark:text-white">{correctCount} <span className="text-xs font-medium text-gray-400 dark:text-gray-500">{t.resultStatUnit}</span></span>
           </div>
 
           <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-gray-200 dark:border-gray-800 flex flex-col justify-center shadow-sm">
             <div className="flex items-center gap-2 text-rose-600 dark:text-rose-400 mb-1">
               <XCircle size={16} />
-              <span className="text-xs font-bold uppercase tracking-wider">Salah</span>
+              <span className="text-xs font-bold uppercase tracking-wider">{t.resultStatWrong}</span>
             </div>
-            <span className="text-2xl font-extrabold text-gray-900 dark:text-white">{wrongCount} <span className="text-xs font-medium text-gray-400 dark:text-gray-500">soal</span></span>
+            <span className="text-2xl font-extrabold text-gray-900 dark:text-white">{wrongCount} <span className="text-xs font-medium text-gray-400 dark:text-gray-500">{t.resultStatUnit}</span></span>
           </div>
 
           <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-gray-200 dark:border-gray-800 flex flex-col justify-center shadow-sm">
             <div className="flex items-center gap-2 text-amber-500 dark:text-amber-400 mb-1">
               <HelpCircle size={16} />
-              <span className="text-xs font-bold uppercase tracking-wider">Esai</span>
+              <span className="text-xs font-bold uppercase tracking-wider">{t.resultStatEssay}</span>
             </div>
-            <span className="text-2xl font-extrabold text-gray-900 dark:text-white">{essayCount} <span className="text-xs font-medium text-gray-400 dark:text-gray-500">soal</span></span>
+            <span className="text-2xl font-extrabold text-gray-900 dark:text-white">{essayCount} <span className="text-xs font-medium text-gray-400 dark:text-gray-500">{t.resultStatUnit}</span></span>
           </div>
 
           <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-gray-200 dark:border-gray-800 flex flex-col justify-center shadow-sm">
             <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 mb-1">
               <Clock size={16} />
-              <span className="text-xs font-bold uppercase tracking-wider">Durasi</span>
+              <span className="text-xs font-bold uppercase tracking-wider">{t.resultStatDuration}</span>
             </div>
             <span className="text-base font-extrabold text-gray-900 dark:text-white leading-tight truncate" title={formatDuration(timeSpent)}>
               {Math.floor(timeSpent / 60)}m {timeSpent % 60}s
@@ -227,7 +233,7 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({
 
         {/* Review Section */}
         <div className="space-y-4">
-          <h3 className="text-lg font-bold text-gray-900 dark:text-white">Review Detail Jawaban</h3>
+          <h3 className="text-lg font-bold text-gray-900 dark:text-white">{t.resultDetailTitle}</h3>
           
           <div className="space-y-3">
             {questions.map((q, idx) => {
@@ -240,17 +246,17 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({
                 if (correctOpt) {
                   const isCorrect = userAnswer === correctOpt.id;
                   statusBadge = isCorrect 
-                    ? <span className="px-2 py-0.5 text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 rounded">BENAR</span>
-                    : <span className="px-2 py-0.5 text-[10px] font-bold bg-rose-100 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 rounded">SALAH</span>;
+                    ? <span className="px-2 py-0.5 text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 rounded">{t.resultDetailCorrect}</span>
+                    : <span className="px-2 py-0.5 text-[10px] font-bold bg-rose-100 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 rounded">{t.resultDetailWrong}</span>;
                 }
               } else if (q.type === 'short-answer') {
                 const acceptableAnswers = q.correctAnswer?.split('|').map(s => s.trim().toLowerCase()) || [];
                 const isCorrect = acceptableAnswers.includes(userAnswer.trim().toLowerCase());
                 statusBadge = isCorrect 
-                  ? <span className="px-2 py-0.5 text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 rounded">BENAR</span>
-                  : <span className="px-2 py-0.5 text-[10px] font-bold bg-rose-100 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 rounded">SALAH</span>;
+                  ? <span className="px-2 py-0.5 text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 rounded">{t.resultDetailCorrect}</span>
+                  : <span className="px-2 py-0.5 text-[10px] font-bold bg-rose-100 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 rounded">{t.resultDetailWrong}</span>;
               } else if (q.type === 'essay') {
-                statusBadge = <span className="px-2 py-0.5 text-[10px] font-bold bg-amber-100 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 rounded">BELUM DINILAI</span>;
+                statusBadge = <span className="px-2 py-0.5 text-[10px] font-bold bg-amber-100 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 rounded">{t.resultDetailUnevaluated}</span>;
               }
 
               return (
@@ -260,7 +266,7 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({
                 >
                   <button
                     onClick={() => toggleExpandQuestion(q.id)}
-                    className="w-full px-6 py-4 flex items-center justify-between text-left hover:bg-slate-50 dark:hover:bg-slate-850 transition-colors"
+                    className="w-full px-6 py-4 flex items-center justify-between text-left hover:bg-slate-50 dark:hover:bg-slate-850 transition-colors cursor-pointer"
                   >
                     <div className="flex items-center gap-3 pr-4 truncate">
                       <span className="font-bold text-sm text-gray-400 dark:text-gray-500">#{idx + 1}</span>
@@ -284,7 +290,7 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({
 
                       {/* Display Question details and User responses */}
                       <div className="space-y-3">
-                        <span className="block text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Opsi & Status Kebenaran:</span>
+                        <span className="block text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">{t.resultDetailOptionHeader}</span>
                         
                         {q.type === 'multiple-choice' && q.options && (
                           <div className="space-y-2">
@@ -321,7 +327,7 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({
                                     </span>
                                   </div>
                                   <div className="flex items-center gap-1.5">
-                                    {isUserAnswer && <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mr-1">(Pilihan Anda)</span>}
+                                    {isUserAnswer && <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mr-1">{t.resultDetailChosenOption}</span>}
                                     {icon}
                                   </div>
                                 </div>
@@ -334,11 +340,11 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({
                           <div className="space-y-2">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
                               <div className="p-3 rounded-xl border border-gray-150 dark:border-gray-800 bg-slate-50 dark:bg-slate-950/25">
-                                <span className="block font-bold text-[10px] text-gray-400 uppercase tracking-wider mb-1">Jawaban Anda</span>
-                                <span className="font-mono font-bold text-gray-800 dark:text-gray-200">{userAnswer || '(Tidak Diisi)'}</span>
+                                <span className="block font-bold text-[10px] text-gray-400 uppercase tracking-wider mb-1">{t.resultDetailShortAnswerUser}</span>
+                                <span className="font-mono font-bold text-gray-800 dark:text-gray-200">{userAnswer || (lang === 'id' ? '(Tidak Diisi)' : '(Not Answered)')}</span>
                               </div>
                               <div className="p-3 rounded-xl border border-emerald-100 dark:border-emerald-950/50 bg-emerald-50/10 dark:bg-emerald-950/5">
-                                <span className="block font-bold text-[10px] text-emerald-600 dark:text-emerald-500 uppercase tracking-wider mb-1">Kunci Jawaban</span>
+                                <span className="block font-bold text-[10px] text-emerald-600 dark:text-emerald-500 uppercase tracking-wider mb-1">{t.resultDetailShortAnswerCorrect}</span>
                                 <span className="font-mono font-bold text-emerald-700 dark:text-emerald-400">{q.correctAnswer?.split('|').map(s => s.trim()).join(' / ')}</span>
                               </div>
                             </div>
@@ -348,9 +354,9 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({
                         {q.type === 'essay' && (
                           <div className="space-y-2 text-xs">
                             <div className="p-4 rounded-xl border border-gray-150 dark:border-gray-800 bg-slate-50 dark:bg-slate-950/25">
-                              <span className="block font-bold text-[10px] text-gray-400 uppercase tracking-wider mb-2">Jawaban Esai Anda</span>
+                              <span className="block font-bold text-[10px] text-gray-400 uppercase tracking-wider mb-2">{t.resultDetailEssayUser}</span>
                               <p className="whitespace-pre-wrap leading-relaxed text-gray-700 dark:text-gray-300 font-medium">
-                                {userAnswer || '(Jawaban kosong)'}
+                                {userAnswer || t.resultDetailEssayPlaceholder}
                               </p>
                             </div>
                           </div>

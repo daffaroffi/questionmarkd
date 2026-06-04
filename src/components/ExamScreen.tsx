@@ -2,7 +2,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { ChevronLeft, ChevronRight, Bookmark, Maximize, Minimize, AlertCircle, Play, Pause, LogOut, Sun, Moon } from 'lucide-react';
 import type { Exam, Question, QuestionOption } from '../utils/markdownParser';
 import { MarkdownRenderer } from './MarkdownRenderer';
-
+import { translations } from '../utils/translations';
+import type { LangType } from '../utils/translations';
 
 interface ExamScreenProps {
   exam: Exam;
@@ -22,6 +23,8 @@ interface ExamScreenProps {
   onUpdateDurationLeft: (seconds: number | null) => void;
   onSubmitExam: () => void;
   onExitWithoutSubmit: () => void;
+  lang: LangType;
+  toggleLanguage: () => void;
 }
 
 export const ExamScreen: React.FC<ExamScreenProps> = ({
@@ -42,12 +45,16 @@ export const ExamScreen: React.FC<ExamScreenProps> = ({
   onUpdateDurationLeft,
   onSubmitExam,
   onExitWithoutSubmit,
+  lang,
+  toggleLanguage,
 }) => {
   const [isPaused, setIsPaused] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showSubmitConfirm, setShowSubmitConfirm] = useState(false);
   const [showExitConfirm, setShowExitConfirm] = useState(false);
   const currentQuestion = questions[currentQuestionIndex];
+
+  const t = translations[lang];
 
   // 1. Fullscreen toggler
   const toggleFullscreen = useCallback(() => {
@@ -85,7 +92,7 @@ export const ExamScreen: React.FC<ExamScreenProps> = ({
           // Time is up! Submit automatically
           clearInterval(interval);
           onUpdateDurationLeft(0);
-          alert('Waktu ujian telah habis! Hasil ujian Anda akan dikirimkan otomatis.');
+          alert(t.examTimeUpAlert);
           onSubmitExam();
         } else {
           onUpdateDurationLeft(durationLeft - 1);
@@ -94,7 +101,7 @@ export const ExamScreen: React.FC<ExamScreenProps> = ({
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [isPaused, timeSpent, durationLeft, onUpdateTimeSpent, onUpdateDurationLeft, onSubmitExam]);
+  }, [isPaused, timeSpent, durationLeft, onUpdateTimeSpent, onUpdateDurationLeft, onSubmitExam, t.examTimeUpAlert]);
 
   // 3. Keyboard Navigation Shortcuts
   useEffect(() => {
@@ -173,11 +180,11 @@ export const ExamScreen: React.FC<ExamScreenProps> = ({
         <div className="flex items-center gap-4">
           <button
             onClick={() => setShowExitConfirm(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/20 rounded-lg transition-colors border border-rose-100 dark:border-rose-950/40"
-            title="Keluar dari Ujian"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/20 rounded-lg transition-colors border border-rose-100 dark:border-rose-950/40 cursor-pointer"
+            title={t.examExit}
           >
             <LogOut size={14} />
-            Keluar
+            {t.examExit}
           </button>
           <div className="h-4 w-[1px] bg-gray-200 dark:bg-gray-800"></div>
           <div>
@@ -196,7 +203,7 @@ export const ExamScreen: React.FC<ExamScreenProps> = ({
                 ? 'bg-rose-50 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-900/50 animate-pulse'
                 : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700'
             }`}>
-              <span className="text-xs uppercase font-sans tracking-wide">Sisa Waktu:</span>
+              <span className="text-xs uppercase font-sans tracking-wide">{t.examTimeRemaining}:</span>
               <span>{formatTime(durationLeft)}</span>
             </div>
           )}
@@ -205,18 +212,27 @@ export const ExamScreen: React.FC<ExamScreenProps> = ({
           {durationLeft !== null && (
             <button
               onClick={() => setIsPaused(!isPaused)}
-              className="p-2 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-slate-900 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors shadow-sm"
-              title={isPaused ? 'Lanjutkan Ujian' : 'Jeda Ujian'}
+              className="p-2 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-slate-900 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors shadow-sm cursor-pointer"
+              title={isPaused ? t.examResumeBtn : 'Pause'}
             >
               {isPaused ? <Play size={16} /> : <Pause size={16} />}
             </button>
           )}
 
+          {/* Language Toggle */}
+          <button
+            onClick={toggleLanguage}
+            className="px-2.5 py-1.5 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-slate-900 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors shadow-sm font-bold text-xs cursor-pointer"
+            title={lang === 'en' ? 'Switch to Bahasa Indonesia' : 'Ganti ke Bahasa Inggris'}
+          >
+            {lang.toUpperCase()}
+          </button>
+
           {/* Fullscreen Button */}
           <button
             onClick={toggleFullscreen}
-            className="p-2 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-slate-900 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors shadow-sm"
-            title="Toggle Layar Penuh"
+            className="p-2 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-slate-900 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors shadow-sm cursor-pointer"
+            title="Toggle Fullscreen"
           >
             {isFullscreen ? <Minimize size={16} /> : <Maximize size={16} />}
           </button>
@@ -224,8 +240,8 @@ export const ExamScreen: React.FC<ExamScreenProps> = ({
           {/* Theme Button */}
           <button
             onClick={toggleDarkMode}
-            className="p-2 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-slate-900 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors shadow-sm"
-            title={isDark ? 'Mode Terang' : 'Mode Gelap'}
+            className="p-2 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-slate-900 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors shadow-sm cursor-pointer"
+            title={isDark ? 'Light Mode' : 'Dark Mode'}
           >
             {isDark ? <Sun size={16} /> : <Moon size={16} />}
           </button>
@@ -245,15 +261,15 @@ export const ExamScreen: React.FC<ExamScreenProps> = ({
         // Pause Screen Overlay
         <div className="flex-1 flex flex-col justify-center items-center p-8 bg-slate-50/90 dark:bg-slate-950/90 backdrop-blur-sm">
           <div className="max-w-md w-full bg-white dark:bg-slate-900 rounded-3xl p-8 border border-gray-200 dark:border-gray-800 shadow-xl text-center">
-            <h3 className="text-2xl font-bold text-gray-950 dark:text-white mb-2">Ujian Disedot (Paused)</h3>
+            <h3 className="text-2xl font-bold text-gray-950 dark:text-white mb-2">{t.examPausedOverlayTitle}</h3>
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
-              Timer sedang dihentikan sementara. Pertanyaan dan jawaban Anda disembunyikan untuk menjaga kejujuran ujian.
+              {t.examPausedOverlayDesc}
             </p>
             <button
               onClick={() => setIsPaused(false)}
-              className="px-6 py-3 bg-violet-600 hover:bg-violet-700 dark:bg-violet-500 dark:hover:bg-violet-600 text-white font-semibold rounded-xl transition-all shadow-lg shadow-violet-500/15"
+              className="px-6 py-3 bg-violet-600 hover:bg-violet-700 dark:bg-violet-500 dark:hover:bg-violet-600 text-white font-semibold rounded-xl transition-all shadow-lg shadow-violet-500/15 cursor-pointer"
             >
-              Lanjutkan Ujian
+              {t.examResumeBtn}
             </button>
           </div>
         </div>
@@ -264,9 +280,9 @@ export const ExamScreen: React.FC<ExamScreenProps> = ({
           <aside className="lg:col-span-1 flex flex-col gap-5 h-fit lg:sticky lg:top-[85px]">
             <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-5 shadow-sm space-y-4">
               <div className="flex items-center justify-between">
-                <span className="font-bold text-xs uppercase tracking-wider text-gray-400 dark:text-gray-500">Navigasi Soal</span>
+                <span className="font-bold text-xs uppercase tracking-wider text-gray-400 dark:text-gray-500">{t.examNavTitle}</span>
                 <span className="text-xs font-bold text-violet-600 dark:text-violet-400">
-                  {totalAnswered} / {questions.length} Terisi
+                  {totalAnswered} / {questions.length} {t.examAnswered}
                 </span>
               </div>
 
@@ -305,25 +321,25 @@ export const ExamScreen: React.FC<ExamScreenProps> = ({
 
               <div className="pt-3 border-t border-gray-100 dark:border-gray-800 flex justify-between text-[11px] text-gray-400 dark:text-gray-500">
                 <div className="flex items-center gap-1">
-                  <span className="w-2.5 h-2.5 bg-violet-600 rounded-sm"></span> Current
+                  <span className="w-2.5 h-2.5 bg-violet-600 rounded-sm"></span> {t.examCurrent}
                 </div>
                 <div className="flex items-center gap-1">
-                  <span className="w-2.5 h-2.5 bg-violet-50 dark:bg-violet-950/20 border border-violet-500 rounded-sm"></span> Answered
+                  <span className="w-2.5 h-2.5 bg-violet-50 dark:bg-violet-950/20 border border-violet-500 rounded-sm"></span> {t.examAnswered}
                 </div>
                 <div className="flex items-center gap-1">
-                  <span className="w-2.5 h-2.5 bg-white dark:bg-slate-950 border border-gray-200 dark:border-gray-800 rounded-sm"></span> Empty
+                  <span className="w-2.5 h-2.5 bg-white dark:bg-slate-950 border border-gray-200 dark:border-gray-800 rounded-sm"></span> {t.examEmpty}
                 </div>
               </div>
             </div>
 
             {/* Keyboard Shortcuts Hint */}
             <div className="bg-slate-100 dark:bg-slate-900/30 rounded-2xl p-4 border border-slate-200/50 dark:border-slate-800/30 hidden lg:block">
-              <span className="block font-bold text-[10px] uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-2">Pintasan Keyboard</span>
-              <ul className="text-xs text-gray-500 dark:text-gray-400 space-y-1.5">
-                <li><kbd className="px-1.5 py-0.5 bg-white dark:bg-slate-800 rounded border border-gray-200 dark:border-gray-700 shadow-sm text-[10px]">←</kbd> / <kbd className="px-1.5 py-0.5 bg-white dark:bg-slate-800 rounded border border-gray-200 dark:border-gray-700 shadow-sm text-[10px]">→</kbd> Navigasi soal</li>
-                <li><kbd className="px-1.5 py-0.5 bg-white dark:bg-slate-800 rounded border border-gray-200 dark:border-gray-700 shadow-sm text-[10px]">F</kbd> Tandai bintang / bookmark</li>
-                <li><kbd className="px-1.5 py-0.5 bg-white dark:bg-slate-800 rounded border border-gray-200 dark:border-gray-700 shadow-sm text-[10px]">1-5</kbd> / <kbd className="px-1.5 py-0.5 bg-white dark:bg-slate-800 rounded border border-gray-200 dark:border-gray-700 shadow-sm text-[10px]">A-E</kbd> Pilih opsi PG</li>
-                <li><kbd className="px-1.5 py-0.5 bg-white dark:bg-slate-800 rounded border border-gray-200 dark:border-gray-700 shadow-sm text-[10px]">Esc</kbd> Batalkan fokus input teks</li>
+              <span className="block font-bold text-[10px] uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-2">{t.examKeyboardShortcuts}</span>
+              <ul className="text-xs text-gray-500 dark:text-gray-400 space-y-1.5 font-medium">
+                <li><kbd className="px-1.5 py-0.5 bg-white dark:bg-slate-800 rounded border border-gray-200 dark:border-gray-700 shadow-sm text-[10px]">←</kbd> / <kbd className="px-1.5 py-0.5 bg-white dark:bg-slate-800 rounded border border-gray-200 dark:border-gray-700 shadow-sm text-[10px]">→</kbd> {t.examShortcutNav}</li>
+                <li><kbd className="px-1.5 py-0.5 bg-white dark:bg-slate-800 rounded border border-gray-200 dark:border-gray-700 shadow-sm text-[10px]">F</kbd> {t.examShortcutFlag}</li>
+                <li><kbd className="px-1.5 py-0.5 bg-white dark:bg-slate-800 rounded border border-gray-200 dark:border-gray-700 shadow-sm text-[10px]">1-5</kbd> / <kbd className="px-1.5 py-0.5 bg-white dark:bg-slate-800 rounded border border-gray-200 dark:border-gray-700 shadow-sm text-[10px]">A-E</kbd> {t.examShortcutChoice}</li>
+                <li><kbd className="px-1.5 py-0.5 bg-white dark:bg-slate-800 rounded border border-gray-200 dark:border-gray-700 shadow-sm text-[10px]">Esc</kbd> {t.examShortcutEscape}</li>
               </ul>
             </div>
           </aside>
@@ -335,10 +351,10 @@ export const ExamScreen: React.FC<ExamScreenProps> = ({
             <div className="px-6 py-4 bg-slate-50/50 dark:bg-slate-900/30 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <span className="text-sm font-bold text-violet-600 dark:text-violet-400">
-                  SOAL NOMOR {currentQuestionIndex + 1}
+                  {t.examQuestionNumber} {currentQuestionIndex + 1}
                 </span>
                 <span className="px-2.5 py-0.5 text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-md">
-                  {currentQuestion.type === 'multiple-choice' ? 'Pilihan Ganda' : currentQuestion.type === 'short-answer' ? 'Isian Singkat' : 'Esai'}
+                  {currentQuestion.type === 'multiple-choice' ? t.examMultipleChoice : currentQuestion.type === 'short-answer' ? t.examShortAnswer : t.examEssay}
                 </span>
               </div>
               <button
@@ -346,11 +362,11 @@ export const ExamScreen: React.FC<ExamScreenProps> = ({
                 className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg border transition-all cursor-pointer ${
                   flags[currentQuestion.id]
                     ? 'bg-amber-50 dark:bg-amber-950/20 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-900/40'
-                    : 'bg-white dark:bg-slate-900 text-gray-500 border-gray-200 dark:border-gray-850 hover:bg-gray-50 dark:hover:bg-slate-800'
+                    : 'bg-white dark:bg-slate-900 text-gray-500 border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-slate-800'
                 }`}
               >
                 <Bookmark size={14} className={flags[currentQuestion.id] ? 'fill-current' : ''} />
-                {flags[currentQuestion.id] ? 'Telah Ditandai' : 'Tandai Ragu-ragu'}
+                {flags[currentQuestion.id] ? t.examFlagBtnActive : t.examFlagBtnInactive}
               </button>
             </div>
 
@@ -368,11 +384,11 @@ export const ExamScreen: React.FC<ExamScreenProps> = ({
 
               {/* Answer Input Controls */}
               <div className="border-t border-gray-100 dark:border-gray-800/50 pt-6 mt-6">
-                <span className="block text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-4">Jawaban Anda:</span>
+                <span className="block text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-4">{t.examYourAnswer}</span>
                 
                 {currentQuestion.type === 'multiple-choice' && (
                   <div className="space-y-3">
-                    {(randomizedChoices[currentQuestion.id] || currentQuestion.options || []).map((opt) => {
+                    {(randomizedChoices[currentQuestion.id] || currentQuestion.options || []).map((opt, index) => {
                       const isSelected = answers[currentQuestion.id] === opt.id;
                       return (
                         <button
@@ -389,7 +405,7 @@ export const ExamScreen: React.FC<ExamScreenProps> = ({
                               ? 'bg-violet-600 border-violet-600 text-white'
                               : 'border-gray-300 dark:border-gray-700 text-gray-500 group-hover:border-gray-400'
                           }`}>
-                            {opt.id}
+                            {String.fromCharCode(65 + index)}
                           </div>
                           <span className={`text-sm font-medium ${
                             isSelected ? 'text-gray-900 dark:text-white font-semibold' : 'text-gray-700 dark:text-gray-300'
@@ -408,11 +424,11 @@ export const ExamScreen: React.FC<ExamScreenProps> = ({
                       type="text"
                       value={answers[currentQuestion.id] || ''}
                       onChange={(e) => onUpdateAnswer(currentQuestion.id, e.target.value)}
-                      placeholder="Ketik jawaban singkat Anda di sini..."
+                      placeholder={t.examPlaceholderShortAnswer}
                       className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-slate-950 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all font-medium text-sm"
                     />
                     <span className="absolute right-3 top-3.5 text-[10px] font-bold text-slate-400 dark:text-slate-500 tracking-wider">
-                      Autosaved
+                      {t.examAutosaved}
                     </span>
                   </div>
                 )}
@@ -422,12 +438,12 @@ export const ExamScreen: React.FC<ExamScreenProps> = ({
                     <textarea
                       value={answers[currentQuestion.id] || ''}
                       onChange={(e) => onUpdateAnswer(currentQuestion.id, e.target.value)}
-                      placeholder="Tuliskan jawaban esai Anda secara lengkap dan detail..."
+                      placeholder={t.examPlaceholderEssay}
                       rows={6}
                       className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-slate-950 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all font-medium text-sm leading-relaxed"
                     />
                     <span className="absolute right-3 bottom-3 text-[10px] font-bold text-slate-400 dark:text-slate-500 tracking-wider">
-                      Autosaved
+                      {t.examAutosaved}
                     </span>
                   </div>
                 )}
@@ -439,10 +455,10 @@ export const ExamScreen: React.FC<ExamScreenProps> = ({
               <button
                 onClick={() => onUpdateIndex(currentQuestionIndex - 1)}
                 disabled={currentQuestionIndex === 0}
-                className="flex items-center gap-1.5 px-4 py-2 text-sm font-bold text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white disabled:opacity-30 disabled:pointer-events-none transition-colors"
+                className="flex items-center gap-1.5 px-4 py-2 text-sm font-bold text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white disabled:opacity-30 disabled:pointer-events-none transition-colors cursor-pointer"
               >
                 <ChevronLeft size={18} />
-                Sebelumnya
+                {t.examPrevBtn}
               </button>
 
               {currentQuestionIndex < questions.length - 1 ? (
@@ -450,7 +466,7 @@ export const ExamScreen: React.FC<ExamScreenProps> = ({
                   onClick={() => onUpdateIndex(currentQuestionIndex + 1)}
                   className="flex items-center gap-1.5 px-5 py-2 bg-violet-600 hover:bg-violet-700 dark:bg-violet-500 dark:hover:bg-violet-600 text-white font-bold rounded-xl transition-all shadow-md shadow-violet-500/10 cursor-pointer"
                 >
-                  Selanjutnya
+                  {t.examNextBtn}
                   <ChevronRight size={18} />
                 </button>
               ) : (
@@ -458,7 +474,7 @@ export const ExamScreen: React.FC<ExamScreenProps> = ({
                   onClick={() => setShowSubmitConfirm(true)}
                   className="flex items-center gap-1.5 px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl transition-all shadow-md shadow-emerald-500/10 cursor-pointer"
                 >
-                  Selesai & Kumpulkan
+                  {t.examSubmitBtn}
                 </button>
               )}
             </div>
@@ -473,21 +489,23 @@ export const ExamScreen: React.FC<ExamScreenProps> = ({
             <div className="w-12 h-12 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 rounded-full flex items-center justify-center mx-auto mb-4">
               <AlertCircle size={24} />
             </div>
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Selesai Mengerjakan Ujian?</h3>
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{t.examConfirmSubmitTitle}</h3>
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
-              Anda telah menjawab <strong>{totalAnswered} dari {questions.length}</strong> pertanyaan. Apakah Anda yakin ingin mengumpulkan ujian sekarang?
+              {t.examConfirmSubmitDesc
+                .replace('{answered}', String(totalAnswered))
+                .replace('{total}', String(questions.length))}
             </p>
             {totalAnswered < questions.length && (
               <div className="mb-6 p-3 rounded-xl bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-300 text-xs font-semibold border border-amber-100 dark:border-amber-900/50">
-                Peringatan: Ada {questions.length - totalAnswered} soal yang belum Anda jawab.
+                {t.examConfirmSubmitWarning.replace('{unanswered}', String(questions.length - totalAnswered))}
               </div>
             )}
             <div className="flex gap-3">
               <button
                 onClick={() => setShowSubmitConfirm(false)}
-                className="flex-1 py-3 text-sm font-bold text-gray-500 hover:text-gray-800 dark:hover:text-white border border-gray-200 dark:border-gray-800 rounded-xl hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors"
+                className="flex-1 py-3 text-sm font-bold text-gray-500 hover:text-gray-800 dark:hover:text-white border border-gray-200 dark:border-gray-800 rounded-xl hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
               >
-                Kembali Periksa
+                {t.examConfirmSubmitCancel}
               </button>
               <button
                 onClick={() => {
@@ -496,7 +514,7 @@ export const ExamScreen: React.FC<ExamScreenProps> = ({
                 }}
                 className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold rounded-xl transition-all shadow-md shadow-emerald-500/10 cursor-pointer"
               >
-                Ya, Kumpulkan
+                {t.examConfirmSubmitConfirm}
               </button>
             </div>
           </div>
@@ -510,16 +528,16 @@ export const ExamScreen: React.FC<ExamScreenProps> = ({
             <div className="w-12 h-12 bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 rounded-full flex items-center justify-center mx-auto mb-4">
               <LogOut size={24} />
             </div>
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Batalkan Ujian?</h3>
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{t.examConfirmExitTitle}</h3>
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
-              Keluar sekarang akan menyimpan progres Anda saat ini ke local storage, namun sesi ujian akan terhenti. Anda dapat melanjutkannya nanti.
+              {t.examConfirmExitDesc}
             </p>
             <div className="flex gap-3">
               <button
                 onClick={() => setShowExitConfirm(false)}
-                className="flex-1 py-3 text-sm font-bold text-gray-500 hover:text-gray-800 dark:hover:text-white border border-gray-200 dark:border-gray-800 rounded-xl hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors"
+                className="flex-1 py-3 text-sm font-bold text-gray-500 hover:text-gray-800 dark:hover:text-white border border-gray-200 dark:border-gray-800 rounded-xl hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
               >
-                Lanjutkan Mengerjakan
+                {t.examConfirmExitCancel}
               </button>
               <button
                 onClick={() => {
@@ -528,7 +546,7 @@ export const ExamScreen: React.FC<ExamScreenProps> = ({
                 }}
                 className="flex-1 py-3 bg-rose-600 hover:bg-rose-700 text-white text-sm font-bold rounded-xl transition-all shadow-md shadow-rose-500/10 cursor-pointer"
               >
-                Ya, Keluar Ujian
+                {t.examConfirmExitConfirm}
               </button>
             </div>
           </div>

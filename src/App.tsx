@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import type { Exam, Question, QuestionOption } from './utils/markdownParser';
 import { LandingScreen } from './components/LandingScreen';
-
 import { SetupScreen } from './components/SetupScreen';
 import { ExamScreen } from './components/ExamScreen';
 import { ResultScreen } from './components/ResultScreen';
+import type { LangType } from './utils/translations';
 
 type ScreenType = 'landing' | 'setup' | 'exam' | 'result';
 
@@ -47,7 +47,24 @@ function App() {
 
   const [hasSavedSession, setHasSavedSession] = useState<boolean>(false);
 
-  // 1. Dark Mode State & Effect
+  // 1. Language State
+  const [lang, setLang] = useState<LangType>(() => {
+    if (typeof window !== 'undefined') {
+      const savedLang = localStorage.getItem('questionmarkd_lang');
+      return (savedLang as LangType) || 'en';
+    }
+    return 'en';
+  });
+
+  useEffect(() => {
+    localStorage.setItem('questionmarkd_lang', lang);
+  }, [lang]);
+
+  const toggleLanguage = () => {
+    setLang(prev => (prev === 'en' ? 'id' : 'en'));
+  };
+
+  // 2. Dark Mode State & Effect
   const [isDark, setIsDark] = useState<boolean>(() => {
     if (typeof window !== 'undefined') {
       return localStorage.theme === 'dark' || 
@@ -68,7 +85,7 @@ function App() {
 
   const toggleDarkMode = () => setIsDark(!isDark);
 
-  // 2. Check for saved session on mount
+  // 3. Check for saved session on mount
   useEffect(() => {
     const saved = localStorage.getItem(SESSION_KEY);
     if (saved) {
@@ -84,7 +101,7 @@ function App() {
     }
   }, []);
 
-  // 3. Save session on state changes
+  // 4. Save session on state changes
   useEffect(() => {
     if (screen === 'exam' && exam) {
       const sessionData: SavedSession = {
@@ -103,7 +120,7 @@ function App() {
     }
   }, [screen, exam, rawMarkdown, questions, randomizedChoices, answers, flags, timeSpent, durationLeft, currentQuestionIndex]);
 
-  // 4. Action Handlers
+  // 5. Action Handlers
   const handleExamLoaded = (loadedExam: Exam, rawContent: string) => {
     setExam(loadedExam);
     setRawMarkdown(rawContent);
@@ -237,6 +254,8 @@ function App() {
           onResumeSession={handleResumeSession}
           isDark={isDark}
           toggleDarkMode={toggleDarkMode}
+          lang={lang}
+          toggleLanguage={toggleLanguage}
         />
       )}
 
@@ -245,6 +264,7 @@ function App() {
           exam={exam}
           onStartExam={handleStartExam}
           onBack={handleRestart}
+          lang={lang}
         />
       )}
 
@@ -267,6 +287,8 @@ function App() {
           onUpdateDurationLeft={setDurationLeft}
           onSubmitExam={handleSubmitExam}
           onExitWithoutSubmit={handleExitWithoutSubmit}
+          lang={lang}
+          toggleLanguage={toggleLanguage}
         />
       )}
 
@@ -277,6 +299,7 @@ function App() {
           answers={answers}
           timeSpent={timeSpent}
           onRestart={handleRestart}
+          lang={lang}
         />
       )}
     </>
