@@ -357,7 +357,7 @@ export const ExamScreen: React.FC<ExamScreenProps> = ({
             {/* Question Text */}
             <div className="p-8 flex-1 space-y-6 overflow-y-auto">
               <div className="text-base md:text-lg font-bold text-gray-950 dark:text-white leading-relaxed">
-                {currentQuestion.title}
+                <MarkdownRenderer content={currentQuestion.title} isInline={true} />
               </div>
               
               {currentQuestion.body && (
@@ -394,7 +394,7 @@ export const ExamScreen: React.FC<ExamScreenProps> = ({
                           <span className={`text-sm font-medium ${
                             isSelected ? 'text-gray-900 dark:text-white font-semibold' : 'text-gray-700 dark:text-gray-300'
                           }`}>
-                            {opt.text}
+                            <MarkdownRenderer content={opt.text} isInline={true} />
                           </span>
                         </button>
                       );

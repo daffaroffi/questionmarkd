@@ -7,30 +7,47 @@ import rehypeKatex from 'rehype-katex';
 interface MarkdownRendererProps {
   content: string;
   className?: string;
+  isInline?: boolean;
 }
 
-export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, className = '' }) => {
+export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, className = '', isInline = false }) => {
   return (
-    <div className={`prose dark:prose-invert max-w-none ${className}`}>
+    <div className={isInline ? `inline ${className}` : `prose dark:prose-invert max-w-none ${className}`}>
       <ReactMarkdown
         remarkPlugins={[remarkGfm, remarkMath]}
         rehypePlugins={[rehypeKatex]}
         components={{
-          h1: ({ node, ...props }) => <h1 className="text-2xl font-bold mt-6 mb-3 text-gray-900 dark:text-white" {...props} />,
-          h2: ({ node, ...props }) => <h2 className="text-xl font-semibold mt-5 mb-2 text-gray-800 dark:text-gray-100" {...props} />,
-          h3: ({ node, ...props }) => <h3 className="text-lg font-medium mt-4 mb-2 text-gray-800 dark:text-gray-200" {...props} />,
-          p: ({ node, ...props }) => <p className="mb-3 leading-relaxed text-gray-700 dark:text-gray-300" {...props} />,
-          ul: ({ node, ...props }) => <ul className="list-disc pl-5 mb-3 space-y-1 text-gray-700 dark:text-gray-300" {...props} />,
-          ol: ({ node, ...props }) => <ol className="list-decimal pl-5 mb-3 space-y-1 text-gray-700 dark:text-gray-300" {...props} />,
-          li: ({ node, ...props }) => <li className="pl-1" {...props} />,
-          a: ({ node, ...props }) => <a className="text-violet-600 dark:text-violet-400 hover:underline font-medium" target="_blank" rel="noopener noreferrer" {...props} />,
-          blockquote: ({ node, ...props }) => (
-            <blockquote className="border-l-4 border-violet-500 pl-4 py-1 my-3 bg-gray-50 dark:bg-gray-800/40 rounded-r italic text-gray-600 dark:text-gray-400" {...props} />
+          h1: ({ node, ...props }) => isInline 
+            ? <span className="font-bold" {...props} /> 
+            : <h1 className="text-2xl font-bold mt-6 mb-3 text-gray-900 dark:text-white" {...props} />,
+          h2: ({ node, ...props }) => isInline 
+            ? <span className="font-semibold" {...props} /> 
+            : <h2 className="text-xl font-semibold mt-5 mb-2 text-gray-800 dark:text-gray-100" {...props} />,
+          h3: ({ node, ...props }) => isInline 
+            ? <span className="font-medium" {...props} /> 
+            : <h3 className="text-lg font-medium mt-4 mb-2 text-gray-800 dark:text-gray-200" {...props} />,
+          p: ({ node, ...props }) => isInline 
+            ? <span className="inline" {...props} /> 
+            : <p className="mb-3 leading-relaxed text-gray-700 dark:text-gray-300" {...props} />,
+          ul: ({ node, ...props }) => isInline 
+            ? <span className="inline-flex gap-1" {...props} /> 
+            : <ul className="list-disc pl-5 mb-3 space-y-1 text-gray-700 dark:text-gray-300" {...props} />,
+          ol: ({ node, ...props }) => isInline 
+            ? <span className="inline-flex gap-1" {...props} /> 
+            : <ol className="list-decimal pl-5 mb-3 space-y-1 text-gray-700 dark:text-gray-300" {...props} />,
+          li: ({ node, ...props }) => isInline 
+            ? <span className="inline" {...props} /> 
+            : <li className="pl-1" {...props} />,
+          a: ({ node, ...props }) => (
+            <a className="text-violet-600 dark:text-violet-400 hover:underline font-medium" target="_blank" rel="noopener noreferrer" {...props} />
           ),
+          blockquote: ({ node, ...props }) => isInline
+            ? <span className="italic text-gray-600 dark:text-gray-400" {...props} />
+            : <blockquote className="border-l-4 border-violet-500 pl-4 py-1 my-3 bg-gray-50 dark:bg-gray-800/40 rounded-r italic text-gray-600 dark:text-gray-400" {...props} />,
           code({ node, className, children, ...props }) {
             const match = /language-(\w+)/.exec(className || '');
-            const isInline = !match;
-            return isInline ? (
+            const isCodeInline = !match;
+            return isCodeInline ? (
               <code className="bg-gray-100 dark:bg-gray-800 text-rose-600 dark:text-rose-400 px-1.5 py-0.5 rounded font-mono text-sm" {...props}>
                 {children}
               </code>
@@ -59,3 +76,4 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, cla
     </div>
   );
 };
+

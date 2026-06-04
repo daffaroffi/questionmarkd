@@ -264,7 +264,9 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({
                   >
                     <div className="flex items-center gap-3 pr-4 truncate">
                       <span className="font-bold text-sm text-gray-400 dark:text-gray-500">#{idx + 1}</span>
-                      <span className="font-bold text-sm text-gray-900 dark:text-white truncate">{q.title}</span>
+                      <span className="font-bold text-sm text-gray-900 dark:text-white truncate">
+                        <MarkdownRenderer content={q.title} isInline={true} />
+                      </span>
                     </div>
                     <div className="flex items-center gap-3 flex-shrink-0">
                       {statusBadge}
@@ -314,7 +316,9 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({
                                     }`}>
                                       {opt.id}
                                     </span>
-                                    <span className={textStyle}>{opt.text}</span>
+                                    <span className={textStyle}>
+                                      <MarkdownRenderer content={opt.text} isInline={true} />
+                                    </span>
                                   </div>
                                   <div className="flex items-center gap-1.5">
                                     {isUserAnswer && <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mr-1">(Pilihan Anda)</span>}
