@@ -101,9 +101,6 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({
       {/* Header */}
       <header className="flex justify-between items-center px-6 py-4 max-w-6xl w-full mx-auto">
         <div className="flex items-center gap-2">
-          <div className="bg-violet-600 dark:bg-violet-500 p-2 rounded-xl text-white shadow-lg shadow-violet-500/20 font-bold tracking-tight">
-            ?md
-          </div>
           <span className="text-xl font-bold bg-gradient-to-r from-gray-900 via-violet-950 to-violet-800 dark:from-white dark:via-violet-200 dark:to-violet-400 bg-clip-text text-transparent">
             {t.appName}
           </span>
