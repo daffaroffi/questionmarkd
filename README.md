@@ -126,8 +126,8 @@ Make sure you have [Node.js](https://nodejs.org/) installed.
 ## Keyboard Shortcuts during Exam
 
 Use the following shortcuts for a smooth desktop experience:
-- **Previous Question**: Left Arrow `←`
-- **Next Question**: Right Arrow `→`
+- **Previous Question**: Left Arrow `<-`
+- **Next Question**: Right Arrow `->`
 - **Flag/Bookmark Question**: Press `F`
 - **Choose Option (Multiple Choice)**: Press keys `1` to `5` OR `A` to `E`
 - **Defocus/Escape text cursor**: Press `Esc` when typing in short answers or essay text boxes to return to keyboard navigation.

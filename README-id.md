@@ -82,8 +82,8 @@ Answer: 3x10^8 | 300000000 | 3 * 10^8
 ## Pintasan Keyboard Saat Ujian
 
 Untuk pengalaman pengerjaan yang cepat, gunakan pintasan berikut:
-- **Kembali ke Soal Sebelumnya**: Tekan tombol arah kiri `←`
-- **Lanjut ke Soal Berikutnya**: Tekan tombol arah kanan `→`
+- **Kembali ke Soal Sebelumnya**: Tekan tombol arah kiri `<-`
+- **Lanjut ke Soal Berikutnya**: Tekan tombol arah kanan `->`
 - **Tandai Ragu-ragu (Flag/Bookmark)**: Tekan tombol `F`
 - **Memilih Opsi Jawaban (Pilihan Ganda)**: Tekan tombol angka `1` s.d `5` ATAU huruf `A` s.d `E` untuk memilih opsi secara instan.
 - **Lepaskan Fokus Teks**: Tekan tombol `Esc` jika Anda sedang memfokuskan kursor pada kotak input isian singkat/esai untuk kembali mengaktifkan navigasi pintasan keyboard.
